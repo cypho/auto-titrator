@@ -7,6 +7,6 @@ The Alkalinity portion has been built and tested.  The Calcium, and Magnesium te
 Build guide and documention are in the [wiki](https://github.com/cypho/auto-titrator/wiki).
 
 ## Code
-Arduino code for the stepper motors can be found in the [Arduino Folder](Arduino).
+Arduino code for the stepper motors can be found in the [Arduino Folder](Arduino/stepper/stepper.ino).
 
 Python code for the raspberry pi can be found in the [Pi Folder](Pi).
