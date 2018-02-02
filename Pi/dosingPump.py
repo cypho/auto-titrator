@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-import sys; sys.dont_write_bytecode = True
+import sys; #sys.dont_write_bytecode = True
 import smbus
 import time
 import json
+import math
 
 class DosingPump(object):
     """Dosing Pump Driver"""
@@ -61,7 +62,7 @@ class DosingPump(object):
         if t is None:
             return None
 
-        return steps / t * 60.0 / 3200.0 
+        return math.ceil( steps / t * 60.0 / 3200.0 )
         
     def timeFor(self, ml = 0, steps = 0, rpm=None):
         if ml > 0:
@@ -99,8 +100,10 @@ class DosingPump(object):
         rpm = int(round(rpm))
         if rpm > 255:
             rpm = 255
-            self.i2c.write_byte_data(self.i2cAddr, self.rpm_register, rpm)
-            self.rpm=rpm
+        if rpm < 1:
+            rpm = 1
+        self.i2c.write_byte_data(self.i2cAddr, self.rpm_register, rpm)
+        self.rpm=rpm
         
     def setConfig(self, d, ms, rpm):
         
@@ -111,6 +114,8 @@ class DosingPump(object):
         rpm = int(round(rpm))
         if rpm > 255:
             rpm = 255
+        if rpm < 1:
+            rpm = 1
         self.i2c.write_i2c_block_data(self.i2cAddr, self.dir_register, [d,ms,rpm] )
         self.dir = d
         self.ms = ms
@@ -138,7 +143,7 @@ class DosingPump(object):
         return (r3 << 24) | (r2 << 16) | (r1 << 8) | (r0 );
     
     def mlToSteps(self,ml):
-        return int(round(ml*self.calibration))
+        return int(math.ceil(ml*self.calibration))
     
     def stepsToML(self,steps):
         return float(steps)/float(self.calibration)

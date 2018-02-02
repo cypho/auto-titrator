@@ -2,4 +2,4 @@
 from pHProbe import pHProbe
 
 pH = pHProbe()
-print pH.value(stable=True, unit='pH', verbose=True )
+print pH.value(stable=0, unit='pH', verbose=True )

@@ -19,7 +19,7 @@ class pHProbe(object):
         if samples is not None:
             self.samples = float(samples)
         
-    def value(self, sampleTime = None, samples=None, stable=True, unit='pH', verbose=False):
+    def value(self, sampleTime = None, samples=None, stable=0, unit='pH', verbose=False):
         
         if sampleTime is not None:
             self.sampleTime = float(sampleTime)
@@ -27,7 +27,7 @@ class pHProbe(object):
         if samples is not None:
             self.samples = int(samples)
         
-        if not stable:
+        if stable is None:
             return self._value(unit)
         
         time.sleep(self.sampleTime)
@@ -41,22 +41,22 @@ class pHProbe(object):
         v3 = self._value(unit)
         if verbose:
             print v3
-        if v1 > v2:
-            while v2 > v3:
+        if v1 > v3 and stable < 1:
+            while min([v1,v2,v3]) != v1:
                 v1 = v2
                 v2 = v3
                 v3 = self._value(unit)
                 if verbose:
                     print v3, 'not stable'
 
-        if v1 < v2:
-            while v2 < v3:
+        if v1 < v3 and stable > -1:
+            while max([v1,v2,v3]) != v1:
                 v1 = v2
                 v2 = v3
                 v3 = self._value(unit)
                 if verbose:
                     print v3, 'not stable'
-        return v3
+        return v1
 
     def _value(self, unit='pH'):
         
@@ -78,7 +78,6 @@ class pHProbe(object):
         
         result = {}
         result['raw'] = self.process(readings)
-        result['mV'] = ((result['raw'] / 4095.0)*4960.0)
         
         if ( result['raw'] < config._7_cal_raw or config._4_cal_raw is None ) and config._10_cal_raw is not None:
             result['pH'] = ( config._7_cal_pH + ( ( result['raw'] - config._7_cal_raw) / ( (config._7_cal_raw - config._10_cal_raw) / (config._7_cal_pH - config._10_cal_pH) ) ) )
@@ -90,7 +89,7 @@ class pHProbe(object):
         return result[unit]
         
     def process(self,x):
-        outlierConstant = 1
+        outlierConstant = 1.5
         a = np.array(x)
         upper_quartile = np.percentile(a, 75)
         lower_quartile = np.percentile(a, 25)
@@ -100,6 +99,5 @@ class pHProbe(object):
         for y in a.tolist():
             if y >= quartileSet[0] and y <= quartileSet[1]:
                 resultList.append(y)
-
         return np.average(resultList)
 
